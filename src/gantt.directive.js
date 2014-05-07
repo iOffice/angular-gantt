@@ -93,12 +93,32 @@ gantt.directive('gantt', ['Gantt', 'dateFunctions', 'mouseOffset', 'debounce', '
                 }
             });
 
-            $scope.$watch('fromDate+toDate', function(newValue, oldValue) {
+            $scope.$watch('fromDate', function(newValue, oldValue) {
                 if (!angular.equals(newValue, oldValue)) {
-                    $scope.gantt.expandDefaultDateRange($scope.fromDate, $scope.toDate);
+                    newValue = new Date(newValue);
+                    oldValue = new Date(oldValue);
+
+                    if (newValue.getTime() > oldValue.getTime()) {
+                        $scope.gantt.contractDefaultDateRange($scope.fromDate, $scope.toDate);
+                    } else if (newValue.getTime() < oldValue.getTime()) {
+                        $scope.gantt.expandDefaultDateRange($scope.fromDate, $scope.toDate);
+                    }
                 }
             });
 
+            $scope.$watch('toDate', function(newValue, oldValue) {
+                if (!angular.equals(newValue, oldValue)) {
+                    newValue = new Date(newValue);
+                    oldValue = new Date(oldValue);
+
+                    if (newValue.getTime() < oldValue.getTime()) {
+                        $scope.gantt.contractDefaultDateRange($scope.fromDate, $scope.toDate);
+                    } else if (newValue.getTime() > oldValue.getTime()) {
+                        $scope.gantt.expandDefaultDateRange($scope.fromDate, $scope.toDate);
+                    }
+                }
+            });
+            
             $scope.getPxToEmFactor = function() {
                 return $scope.ganttScroll.children()[0].offsetWidth / $scope.gantt.width;
             };
