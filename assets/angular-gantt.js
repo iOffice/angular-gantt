@@ -617,6 +617,14 @@ gantt.directive('gantt', ['Gantt', 'dateFunctions', 'mouseOffset', 'debounce', '
             }
         };
 
+        //Contracts the default date range
+        self.contractDefaultDateRange = function(from, to) {
+            if (from !== undefined && to !== undefined) {
+                contractDateRange(from, to);
+                contractColumns();
+            }
+        };
+
         var expandDateRange = function(from, to) {
             from = df.clone(from);
             to = df.clone(to);
@@ -636,6 +644,24 @@ gantt.directive('gantt', ['Gantt', 'dateFunctions', 'mouseOffset', 'debounce', '
             }
         };
 
+        var contractDateRange = function(from, to) {
+            from = df.clone(from);
+            to = df.clone(to);
+
+            if (dateRange === undefined) {
+                dateRange = {};
+                dateRange.from = from;
+                dateRange.to = to;
+            } else {
+                if (from > dateRange.from) {
+                    dateRange.from = from;
+                }
+                if (to < dateRange.to) {
+                    dateRange.to = to;
+                }
+            }
+        };
+
         // Generates the Gantt columns according to the current dateRange. The columns are generated if necessary only.
         var expandColumns = function() {
             if (dateRange === undefined) {
@@ -648,6 +674,21 @@ gantt.directive('gantt', ['Gantt', 'dateFunctions', 'mouseOffset', 'debounce', '
             } else if (self.getFirstColumn().date > dateRange.from || self.getLastColumn().date < dateRange.to) {
                 var minFrom = self.getFirstColumn().date > dateRange.from ? dateRange.from: self.getFirstColumn().date;
                 var maxTo = self.getLastColumn().date < dateRange.to ? dateRange.to: self.getLastColumn().date;
+
+                expandColumnsNoCheck(minFrom, maxTo);
+            }
+        };
+        
+        var contractColumns = function() {
+            if (dateRange === undefined) {
+                throw "From and to date range cannot be undefined";
+            }
+            //Only contract if contract is necessary
+            if (self.columns.length === 0) {
+                expandColumnsNoCheck(dateRange.from, dateRange.to);
+            } else if (self.getFirstColumn().date < dateRange.from || self.getLastColumn().date > dateRange.to) {
+                var minFrom = self.getFirstColumn().date < dateRange.from ? dateRange.from: self.getFirstColumn().date;
+                var maxTo = self.getLastColumn().date > dateRange.to ? dateRange.to: self.getLastColumn().date;
 
                 expandColumnsNoCheck(minFrom, maxTo);
             }
@@ -900,7 +941,8 @@ gantt.directive('gantt', ['Gantt', 'dateFunctions', 'mouseOffset', 'debounce', '
     };
 
     return Gantt;
-}]);;gantt.factory('HeaderGenerator', [ 'Column', 'dateFunctions', function (Column, df) {
+}]);
+;gantt.factory('HeaderGenerator', [ 'Column', 'dateFunctions', function (Column, df) {
 
     var generateHourHeader = function(columns) {
         var generatedHeaders = [];
