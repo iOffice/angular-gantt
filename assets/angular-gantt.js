@@ -48,7 +48,7 @@ gantt.directive('gantt', ['Gantt', 'dateFunctions', 'mouseOffset', 'debounce', '
             onTaskClicked: "&",
             onTaskUpdated: "&"
         },
-        controller: ['$scope', '$element', function ($scope, $element, $timeout) {
+        controller: ['$scope', '$element', function ($scope, $element) {
             // Initialize defaults
             if ($scope.sortMode === undefined) $scope.sortMode = "name";
             if ($scope.viewScale === undefined) $scope.viewScale = "day";
@@ -150,14 +150,6 @@ gantt.directive('gantt', ['Gantt', 'dateFunctions', 'mouseOffset', 'debounce', '
                     $scope.ganttScroll[0].scrollLeft = x - $scope.ganttScroll[0].offsetWidth/2;
                 }
             };
-
-			// Tries to center the specified date
-			$scope.scrollToDate2 = function(date) {
-				var column = $scope.gantt.getColumnByDate(date);
-				if (column !== undefined) {
-					$scope.ganttScroll[0].scrollLeft = column.left  * $scope.getPxToEmFactor();
-				}
-			};
 
             $scope.autoExpandColumns = keepScrollPos($scope, function(el, date, direction) {
                 if ($scope.autoExpand !== true) {
@@ -288,8 +280,7 @@ gantt.directive('gantt', ['Gantt', 'dateFunctions', 'mouseOffset', 'debounce', '
             $scope.clearData({ fn: $scope.removeAllData});
 
             // Scroll to specified date handler.
-            $scope.centerDate({ fn: $scope.scrollToDate2});
-
+            $scope.centerDate({ fn: $scope.scrollToDate});
 
             // Gantt is initialized. Signal that the Gantt is ready.
             $scope.onGanttReady();
@@ -1515,7 +1506,8 @@ gantt.directive('gantt', ['Gantt', 'dateFunctions', 'mouseOffset', 'debounce', '
                     $scope.raiseTaskClickedEvent($scope.task);
                 }
 
-                //Stop the click event form propagating
+                //Stop the click event from propagating
+
                 e.stopPropagation();
                 e.preventDefault();
             });
@@ -1531,6 +1523,10 @@ gantt.directive('gantt', ['Gantt', 'dateFunctions', 'mouseOffset', 'debounce', '
 
             $element.bind('mouseenter', function () {
                 $scope.task.mouseOver = true;
+            });
+
+            $element.bind('mouseleave', function () {
+                $scope.task.mouseOver = false;
             });
 
             var handleMove = function(mode, mousePos) {
@@ -1738,7 +1734,7 @@ gantt.directive('gantt', ['Gantt', 'dateFunctions', 'mouseOffset', 'debounce', '
     // Uses the sortableState to share the current row
 
     return {
-        restrict: "EA",
+        restrict: "E",
         template: "<div ng-transclude></div>",
         replace: true,
         transclude: true,
@@ -1804,7 +1800,7 @@ gantt.directive('gantt', ['Gantt', 'dateFunctions', 'mouseOffset', 'debounce', '
     // This tooltip displays more information about a task
 
     return {
-        restrict: "EA",
+        restrict: "E",
         template: "<div ng-mouseenter='mouseEnter($event)' ng-mouseleave='mouseLeave($event)'>" +
             "<div ng-if='visible' class='gantt-task-info' ng-style='css'>" +
             "<div class='gantt-task-info-content'>" +
