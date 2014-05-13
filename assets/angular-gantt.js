@@ -86,41 +86,42 @@ gantt.directive('gantt', ['Gantt', 'dateFunctions', 'mouseOffset', 'debounce', '
 
             // Add a watcher if a view related setting changed from outside of the Gantt. Update the gantt accordingly if so.
             // All those changes need a recalculation of the header columns
-            $scope.$watch('viewScale+columnWidth+columnSubScale+fromDate+toDate+firstDayOfWeek+weekendDays+showWeekends+workHours+showNonWorkHours', function(newValue, oldValue) {
+           $scope.$watch('viewScale+columnWidth+columnSubScale+firstDayOfWeek+weekendDays+showWeekends+workHours+showNonWorkHours', function(newValue, oldValue) {
                 if (!angular.equals(newValue, oldValue)) {
                     $scope.gantt.setViewScale($scope.viewScale, $scope.columnWidth, $scope.columnSubScale, $scope.firstDayOfWeek, $scope.weekendDays, $scope.showWeekends, $scope.workHours, $scope.showNonWorkHours);
-                    $scope.gantt.reGenerateColumns();
+                    if (!$scope.gantt.reGenerateColumns()) {
+                        // Re-generate failed, e.g. because there was no previous date-range. Try to apply the default range.
+                        $scope.gantt.expandDefaultDateRange($scope.fromDate, $scope.toDate);
+                    }
                 }
             });
 
-                        $scope.$watch('fromDate', function(newValue, oldValue) {
-				if (!angular.equals(newValue, oldValue)) {
-					newValue = new Date(newValue);
-					oldValue = new Date(oldValue);
+            $scope.$watch('fromDate', function(newValue, oldValue) {
+                if (!angular.equals(newValue, oldValue)) {
+                    newValue = new Date(newValue);
+                    oldValue = new Date(oldValue);
 
-					if (newValue.getTime() > oldValue.getTime()) {
-						$scope.gantt.contractDefaultDateRange($scope.fromDate, $scope.toDate);
-					} else if (newValue.getTime() < oldValue.getTime()) {
-						$scope.gantt.expandDefaultDateRange($scope.fromDate, $scope.toDate);
-					}
-				}
-
+                    if (newValue.getTime() > oldValue.getTime()) {
+                        $scope.gantt.contractDefaultDateRange($scope.fromDate, $scope.toDate);
+                    } else if (newValue.getTime() < oldValue.getTime()) {
+                        $scope.gantt.expandDefaultDateRange($scope.fromDate, $scope.toDate);
+                    }
+                }
             });
 
-			$scope.$watch('toDate', function(newValue, oldValue) {
+            $scope.$watch('toDate', function(newValue, oldValue) {
+                if (!angular.equals(newValue, oldValue)) {
+                    newValue = new Date(newValue);
+                    oldValue = new Date(oldValue);
 
-				if (!angular.equals(newValue, oldValue)) {
-					newValue = new Date(newValue);
-					oldValue = new Date(oldValue);
-
-					if (newValue.getTime() < oldValue.getTime()) {
-						$scope.gantt.contractDefaultDateRange($scope.fromDate, $scope.toDate);
-					} else if (newValue.getTime() > oldValue.getTime()) {
-						$scope.gantt.expandDefaultDateRange($scope.fromDate, $scope.toDate);
-					}
-				}
-			});
-
+                    if (newValue.getTime() < oldValue.getTime()) {
+                        $scope.gantt.contractDefaultDateRange($scope.fromDate, $scope.toDate);
+                    } else if (newValue.getTime() > oldValue.getTime()) {
+                        $scope.gantt.expandDefaultDateRange($scope.fromDate, $scope.toDate);
+                    }
+                }
+            });
+            
             $scope.getPxToEmFactor = function() {
                 return $scope.ganttScroll.children()[0].offsetWidth / $scope.gantt.width;
             };
@@ -288,7 +289,10 @@ gantt.directive('gantt', ['Gantt', 'dateFunctions', 'mouseOffset', 'debounce', '
 
             // Clear all existing rows and tasks
             $scope.removeAllData = function() {
+                // Clears rows, task and columns
                 $scope.gantt.removeRows();
+                // Restore default columns
+                $scope.gantt.expandDefaultDateRange($scope.fromDate, $scope.toDate);
             };
 
             // Bind scroll event
@@ -638,13 +642,14 @@ gantt.directive('gantt', ['Gantt', 'dateFunctions', 'mouseOffset', 'debounce', '
                 expandColumns();
             }
         };
-        // Contracts the default date range
+
+        //Contracts the default date range
         self.contractDefaultDateRange = function(from, to) {
-			if (from !== undefined && to !== undefined) {
-				contractDateRange(from, to);
-				contractColumns();
-			}
-		};
+            if (from !== undefined && to !== undefined) {
+                contractDateRange(from, to);
+                contractColumns();
+            }
+        };
 
         var expandDateRange = function(from, to) {
             from = df.clone(from);
@@ -666,23 +671,22 @@ gantt.directive('gantt', ['Gantt', 'dateFunctions', 'mouseOffset', 'debounce', '
         };
 
         var contractDateRange = function(from, to) {
-			from = df.clone(from);
-			to = df.clone(to);
+            from = df.clone(from);
+            to = df.clone(to);
 
-			if (dateRange === undefined) {
-				dateRange = {};
-				dateRange.from = from;
-				dateRange.to = to;
-			} else {
-				if (from > dateRange.from) {
-					dateRange.from = from;
-				}
-
-				if (to < dateRange.to) {
-					dateRange.to = to;
-				}
-			}
-		};
+            if (dateRange === undefined) {
+                dateRange = {};
+                dateRange.from = from;
+                dateRange.to = to;
+            } else {
+                if (from > dateRange.from) {
+                    dateRange.from = from;
+                }
+                if (to < dateRange.to) {
+                    dateRange.to = to;
+                }
+            }
+        };
 
         // Generates the Gantt columns according to the current dateRange. The columns are generated if necessary only.
         var expandColumns = function() {
@@ -702,22 +706,20 @@ gantt.directive('gantt', ['Gantt', 'dateFunctions', 'mouseOffset', 'debounce', '
         };
         
         var contractColumns = function() {
+            if (dateRange === undefined) {
+                throw "From and to date range cannot be undefined";
+            }
+            //Only contract if contract is necessary
+            if (self.columns.length === 0) {
+                expandColumnsNoCheck(dateRange.from, dateRange.to);
+            } else if (self.getFirstColumn().date < dateRange.from || self.getLastColumn().date > dateRange.to) {
+                var minFrom = self.getFirstColumn().date < dateRange.from ? dateRange.from: self.getFirstColumn().date;
+                var maxTo = self.getLastColumn().date > dateRange.to ? dateRange.to: self.getLastColumn().date;
 
-			if (dateRange === undefined) {
-				throw "From and to date range cannot be undefined";
-			}
+                expandColumnsNoCheck(minFrom, maxTo);
+            }
+        };
 
-			//Only contract if contract is necessary
-			if (self.columns.length === 0) {
-				expandColumnsNoCheck(dateRange.from,  dateRange.to);
-			} else if (self.getFirstColumn().date < dateRange.from || self.getLastColumn().date > dateRange.to) {
-				var minFrom = self.getFirstColumn().date < dateRange.from ? dateRange.from: self.getFirstColumn().date;
-				var maxTo = self.getLastColumn().date > dateRange.to ? dateRange.to: self.getLastColumn().date;
-
-				expandColumnsNoCheck(minFrom, maxTo);
-			}
-		};
-		
         // Generates the Gantt columns according to the specified from - to date range. Uses the currently assigned column generator.
         var expandColumnsNoCheck = function(from ,to) {
             self.columns = self.columnGenerator.generate(from, to);

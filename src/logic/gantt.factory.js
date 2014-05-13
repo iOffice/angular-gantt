@@ -35,13 +35,14 @@ gantt.factory('Gantt', ['Row', 'ColumnGenerator', 'HeaderGenerator', 'dateFuncti
                 expandColumns();
             }
         };
-        // Contracts the default date range
+
+        //Contracts the default date range
         self.contractDefaultDateRange = function(from, to) {
-			if (from !== undefined && to !== undefined) {
-				contractDateRange(from, to);
-				contractColumns();
-			}
-		};
+            if (from !== undefined && to !== undefined) {
+                contractDateRange(from, to);
+                contractColumns();
+            }
+        };
 
         var expandDateRange = function(from, to) {
             from = df.clone(from);
@@ -63,23 +64,22 @@ gantt.factory('Gantt', ['Row', 'ColumnGenerator', 'HeaderGenerator', 'dateFuncti
         };
 
         var contractDateRange = function(from, to) {
-			from = df.clone(from);
-			to = df.clone(to);
+            from = df.clone(from);
+            to = df.clone(to);
 
-			if (dateRange === undefined) {
-				dateRange = {};
-				dateRange.from = from;
-				dateRange.to = to;
-			} else {
-				if (from > dateRange.from) {
-					dateRange.from = from;
-				}
-
-				if (to < dateRange.to) {
-					dateRange.to = to;
-				}
-			}
-		};
+            if (dateRange === undefined) {
+                dateRange = {};
+                dateRange.from = from;
+                dateRange.to = to;
+            } else {
+                if (from > dateRange.from) {
+                    dateRange.from = from;
+                }
+                if (to < dateRange.to) {
+                    dateRange.to = to;
+                }
+            }
+        };
 
         // Generates the Gantt columns according to the current dateRange. The columns are generated if necessary only.
         var expandColumns = function() {
@@ -99,22 +99,20 @@ gantt.factory('Gantt', ['Row', 'ColumnGenerator', 'HeaderGenerator', 'dateFuncti
         };
         
         var contractColumns = function() {
+            if (dateRange === undefined) {
+                throw "From and to date range cannot be undefined";
+            }
+            //Only contract if contract is necessary
+            if (self.columns.length === 0) {
+                expandColumnsNoCheck(dateRange.from, dateRange.to);
+            } else if (self.getFirstColumn().date < dateRange.from || self.getLastColumn().date > dateRange.to) {
+                var minFrom = self.getFirstColumn().date < dateRange.from ? dateRange.from: self.getFirstColumn().date;
+                var maxTo = self.getLastColumn().date > dateRange.to ? dateRange.to: self.getLastColumn().date;
 
-			if (dateRange === undefined) {
-				throw "From and to date range cannot be undefined";
-			}
+                expandColumnsNoCheck(minFrom, maxTo);
+            }
+        };
 
-			//Only contract if contract is necessary
-			if (self.columns.length === 0) {
-				expandColumnsNoCheck(dateRange.from,  dateRange.to);
-			} else if (self.getFirstColumn().date < dateRange.from || self.getLastColumn().date > dateRange.to) {
-				var minFrom = self.getFirstColumn().date < dateRange.from ? dateRange.from: self.getFirstColumn().date;
-				var maxTo = self.getLastColumn().date > dateRange.to ? dateRange.to: self.getLastColumn().date;
-
-				expandColumnsNoCheck(minFrom, maxTo);
-			}
-		};
-		
         // Generates the Gantt columns according to the specified from - to date range. Uses the currently assigned column generator.
         var expandColumnsNoCheck = function(from ,to) {
             self.columns = self.columnGenerator.generate(from, to);
