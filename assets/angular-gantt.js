@@ -1802,7 +1802,7 @@ gantt.directive('gantt', ['Gantt', 'dateFunctions', 'mouseOffset', 'debounce', '
     // Uses the sortableState to share the current row
 
     return {
-        restrict: "E",
+        restrict: "EA",
         template: "<div ng-transclude></div>",
         replace: true,
         transclude: true,
@@ -1864,11 +1864,12 @@ gantt.directive('gantt', ['Gantt', 'dateFunctions', 'mouseOffset', 'debounce', '
             };
         }]
     };
-}]);;gantt.directive('ganttTooltip', ['$timeout', '$document', 'debounce', 'smartEvent', function ($timeout, $document, debounce, smartEvent) {
+}]);
+;gantt.directive('ganttTooltip', ['$timeout', '$document', 'debounce', 'smartEvent', function ($timeout, $document, debounce, smartEvent) {
     // This tooltip displays more information about a task
 
     return {
-        restrict: "E",
+        restrict: "EA",
         template: "<div ng-mouseenter='mouseEnter($event)' ng-mouseleave='mouseLeave($event)'>" +
             "<div ng-if='visible' class='gantt-task-info' ng-style='css'>" +
             "<div class='gantt-task-info-content'>" +
@@ -1960,7 +1961,8 @@ gantt.directive('gantt', ['Gantt', 'dateFunctions', 'mouseOffset', 'debounce', '
             };
         }]
     };
-}]);;gantt.factory('debounce',['$timeout', function ($timeout) {
+}]);
+;gantt.factory('debounce',['$timeout', function ($timeout) {
     function debounce(fn, timeout) {
         var nthCall = 0;
         return function() {

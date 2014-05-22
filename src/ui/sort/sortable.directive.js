@@ -3,7 +3,7 @@ gantt.directive('ganttSortable', ['$document', 'sortManager', function ($documen
     // Uses the sortableState to share the current row
 
     return {
-        restrict: "E",
+        restrict: "EA",
         template: "<div ng-transclude></div>",
         replace: true,
         transclude: true,
