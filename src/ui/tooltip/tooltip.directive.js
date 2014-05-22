@@ -2,7 +2,7 @@ gantt.directive('ganttTooltip', ['$timeout', '$document', 'debounce', 'smartEven
     // This tooltip displays more information about a task
 
     return {
-        restrict: "E",
+        restrict: "EA",
         template: "<div ng-mouseenter='mouseEnter($event)' ng-mouseleave='mouseLeave($event)'>" +
             "<div ng-if='visible' class='gantt-task-info' ng-style='css'>" +
             "<div class='gantt-task-info-content'>" +
