@@ -1,5 +1,5 @@
 {
-  "name": "angular-gantt",
+  "name": "@ioffice/angular-gantt",
   "version": "0.5.1",
   "description": "A Gantt chart directive for Angular.js without any other dependencies.",
   "author": "Marco Schweighauser",
@@ -10,5 +10,8 @@
     "grunt-contrib-uglify": "~0.2.4",
     "grunt-contrib-jshint": "~0.7.0",
     "grunt-contrib-watch": "~0.5.3"
+  },
+  "publishConfig": {
+    "registry": "http://bartifactory.corp.iofficecorp.com:8081/artifactory/api/npm/ioffice-npm"
   }
 }
