@@ -13,5 +13,8 @@
   },
   "publishConfig": {
     "registry": "http://bartifactory.corp.iofficecorp.com:8081/artifactory/api/npm/ioffice-npm"
+  },
+  "peerDependencies": {
+    "moment": "^2.17.1"
   }
 }
