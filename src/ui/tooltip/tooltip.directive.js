@@ -9,8 +9,8 @@ gantt.directive('ganttTooltip', ['$timeout', '$document', 'debounce', 'smartEven
             "{{ task.subject }}</br>" +
             "<small>" +
             "{{ task.isMilestone === true &&" +
-            " (task.from | date:'MMM d, HH:mm') ||" +
-            " (task.from | date:'MMM d, HH:mm') + ' - ' + (task.to | date:'MMM d, HH:mm') }}" +
+            "(task.localizedFromDate) ||" +
+            "(task.localizedFromDate) + ' - ' + (task.localizedToDate)}}" +
             "</small>" +
             "</div>" +
             "</div>" +
@@ -26,6 +26,9 @@ gantt.directive('ganttTooltip', ['$timeout', '$document', 'debounce', 'smartEven
 
             $scope.mouseEnter = function (e) {
                 if (!$scope.task.isMoving) {
+                    // iOfficeLocale is to be defined in the window
+                    $scope.task.localizedFromDate = moment($scope.task.from).locale(iOfficeLocale).format('lll');
+                    $scope.task.localizedToDate = moment($scope.task.to).locale(iOfficeLocale).format('lll');
                     showTooltip(e.clientX);
                 }
             };
