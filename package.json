@@ -1,5 +1,5 @@
 {
-  "name": "@ioffice/angular-gantt",
+  "name": "@ioffice-internal/angular-gantt",
   "version": "0.6.1",
   "description": "A Gantt chart directive for Angular.js without any other dependencies.",
   "author": "Marco Schweighauser",
